@@ -3,42 +3,42 @@ package tddmicroexercises.telemetrysystem;
 public class TelemetryDiagnosticControls
 {
     private final String DiagnosticChannelConnectionString = "*111#";
-    
-    private final TelemetryClient telemetryClient;
+    private TelemetryActions telemetryActions;
+
+    public TelemetryDiagnosticControls(TelemetryActions telemetryActions)
+    {
+        this.telemetryActions = telemetryActions;
+    }
     private String diagnosticInfo = "";
 
-        public TelemetryDiagnosticControls()
-        {
-            telemetryClient = new TelemetryClient();
-        }
-        
-        public String getDiagnosticInfo(){
-            return diagnosticInfo;
-        }
-        
-        public void setDiagnosticInfo(String diagnosticInfo){
-            this.diagnosticInfo = diagnosticInfo;
-        }
- 
-        public void checkTransmission() throws Exception
-        {
-            diagnosticInfo = "";
+    public String getDiagnosticInfo(){
+        return diagnosticInfo;
+    }
 
-            telemetryClient.disconnect();
+    public void setDiagnosticInfo(String diagnosticInfo){
+        this.diagnosticInfo = diagnosticInfo;
+    }
+ 
+    public void checkTransmission() throws Exception
+    {
+        Connection connection = new TelemetryClientConnection();
+        diagnosticInfo = "";
+
+        connection.disconnect();
     
-            int retryLeft = 3;
-            while (telemetryClient.getOnlineStatus() == false && retryLeft > 0)
-            {
-                telemetryClient.connect(DiagnosticChannelConnectionString);
-                retryLeft -= 1;
-            }
+        int retryLeft = 3;
+        while (connection.getOnlineStatus() == false && retryLeft > 0)
+        {
+            connection.connect(DiagnosticChannelConnectionString);
+            retryLeft -= 1;
+        }
              
-            if(telemetryClient.getOnlineStatus() == false)
-            {
-                throw new Exception("Unable to connect.");
-            }
+        if(connection.getOnlineStatus() == false)
+        {
+            throw new Exception("Unable to connect.");
+        }
     
-            telemetryClient.send(TelemetryClient.DIAGNOSTIC_MESSAGE);
-            diagnosticInfo = telemetryClient.receive();
+        telemetryActions.send(TelemetryActionsImpl.DIAGNOSTIC_MESSAGE);
+        setDiagnosticInfo(telemetryActions.receive());
     }
 }
